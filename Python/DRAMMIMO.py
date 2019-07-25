@@ -19,7 +19,9 @@ def getDRAMMIMOChains(data,model,modelParams,DRAMParams):
     ## Initialize parameters.
 
     # Number of data sets.
-    numDataSets = np.array([len(data['xdata']),len(data['ydata']),len(model['fun']),len(model['errFun']),len(model['ssFun']),len(modelParams['extra'])])
+    numDataSets = np.array([len(data['xdata']),len(data['ydata']), \
+                            len(model['fun']),len(model['errFun']),len(model['ssFun']), \
+                            len(modelParams['extra'])])
     if np.any(numDataSets-numDataSets[0]):
         raise ValueError('Unequal numbers of sets in either data or model.')
     N = numDataSets[0]
@@ -339,7 +341,7 @@ def getDRAMMIMOIntervals(data,model,modelParams,chain_q,chain_cov_err,nSample):
     if nSample == m:
         iSample = np.arange(0,m,1).astype(int)
     else:
-        iSample = np.ceil(np.random.rand(nSample)*m).astype(int)
+        iSample = np.floor(np.random.rand(nSample)*m).astype(int)
 
     # Sample the estimation chain for the credible region as ysave and the prediction region as osave.
     ySave = np.zeros((N,nSample,n))
@@ -488,27 +490,31 @@ if __name__ == '__main__':
 
     # Data.
     figNum += 1
-    plt.figure(figNum)
+    plt.figure(figNum,figsize=(10,6))
     plt.plot(inputData1,outputData1,'bo',markerfacecolor='None',label='Data I')
     plt.plot(inputData2,outputData2,'ro',markerfacecolor='None',label='Data II')
     plt.xlabel('$x$',fontsize=18)
     plt.ylabel('$y$',fontsize=18)
     plt.xlim(0,1)
     plt.ylim(-0.1,1.3)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.legend(loc='upper left',fontsize=18,frameon=False)
 
     # Estimation chains.
     figNum += 1
-    plt.figure(figNum)
+    plt.figure(figNum,figsize=(10,6))
     plt.subplot(2,1,1)
     plt.plot(np.arange(1,chain_q.shape[0]+1,1),chain_q[:,0],'.')
     plt.xticks([])
+    plt.yticks(fontsize=18)
     plt.ylabel('$a$',fontsize=18)
     plt.xlim(0,chain_q.shape[0])
     plt.ylim(np.min(chain_q[:,0]),np.max(chain_q[:,0]))
     plt.subplot(2,1,2)
     plt.plot(np.arange(1,chain_q.shape[0]+1,1),chain_q[:,1],'.')
     plt.xticks([])
+    plt.yticks(fontsize=18)
     plt.xlabel('Iterations',fontsize=18)
     plt.ylabel('$b$',fontsize=18)
     plt.xlim(0,chain_q.shape[0])
@@ -516,22 +522,24 @@ if __name__ == '__main__':
 
     # Posterior densities.
     figNum += 1
-    plt.figure(figNum)
+    plt.figure(figNum,figsize=(10,6))
     plt.subplot(1,2,1)
     plt.plot(vals[:,0],probs[:,0],'k',linewidth=3)
     plt.xlabel('$a$',fontsize=18)
     plt.xlim(np.min(vals[:,0]),np.max(vals[:,0]))
+    # plt.xticks(fontsize=18)
     plt.yticks([])
     plt.ylabel('Posterior Density',fontsize=18)
     plt.subplot(1,2,2)
     plt.plot(vals[:,1],probs[:,1],'k',linewidth=3)
     plt.xlabel('$b$',fontsize=18)
     plt.xlim(np.min(vals[:,1]),np.max(vals[:,1]))
+    # plt.xticks(fontsize=18)
     plt.yticks([])
 
     # Credible and prediction intervals for data set I.
     figNum += 1
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10,6))
     limitX = np.vstack((inputData1,np.flip(inputData1,axis=0)))
     predLimitY = np.vstack((np.array([predLims[0,0,:]]).T,np.array(np.fliplr([predLims[0,2,:]])).T))
     predLimits = mpatch.Polygon(np.hstack((limitX,predLimitY)),facecolor=(1,0.75,0.5))
@@ -545,6 +553,8 @@ if __name__ == '__main__':
     plt.ylabel('$y_1$',fontsize=18)
     plt.xlim(0,1)
     plt.ylim(-0.7,2)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     lgd = [mpatch.Patch(facecolor=(1,0.75,0.5),edgecolor='None',label='95% Pred Interval'), \
            mpatch.Patch(facecolor=(0.75,1,0.5),edgecolor='None',label='95% Cred Interval'), \
            mline.Line2D([0],[0],color='k',label='Model'), \
@@ -554,7 +564,7 @@ if __name__ == '__main__':
     # Credible and prediction intervals for data set II.
     if mode==2:
         figNum += 1
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10,6))
         limitX = np.vstack((inputData2,np.flip(inputData2,axis=0)))
         predLimitY = np.vstack((np.array([predLims[1,0,:]]).T,np.array(np.fliplr([predLims[1,2,:]])).T))
         predLimits = mpatch.Polygon(np.hstack((limitX,predLimitY)),facecolor=(1,0.75,0.5))
@@ -568,6 +578,8 @@ if __name__ == '__main__':
         plt.ylabel('$y_2$',fontsize=18)
         plt.xlim(0,1)
         plt.ylim(-0.7,2)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         lgd = [mpatch.Patch(facecolor=(1,0.75,0.5),edgecolor='None',label='95% Pred Interval'), \
                mpatch.Patch(facecolor=(0.75,1,0.5),edgecolor='None',label='95% Cred Interval'), \
                mline.Line2D([0],[0],color='k',label='Model'), \
