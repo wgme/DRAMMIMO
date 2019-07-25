@@ -3,7 +3,7 @@ Delayed Rejection Adaptive Metropolis Multi Input Multi Output
 
 This package utilizes a modified version of the Delayed Rejection Adaptive Metropolis (DRAM) algorithm to realize the Maximum Entropy (ME) method numerically. 
 
-The DRAM algorithm is written based on the toolbox from Dr. Marko J. Laine (https://mjlaine.github.io/mcmcstat/) and the book [1] from Dr. Ralph C. Smith.
+The modified DRAM algorithm is written based on the toolbox from Dr. Marko J. Laine (https://mjlaine.github.io/mcmcstat/) and the book [1] from Dr. Ralph C. Smith.
 
 The Maximum Entropy method can be used for fusion of data from hetergeneous sources and uncertainty quantification of model parameters that are shared among models [2].
 
