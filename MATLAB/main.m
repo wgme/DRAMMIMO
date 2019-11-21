@@ -1,79 +1,97 @@
-close all;clear;clc;
-
+close all; clear; clc; format short g;
 %% Below is an example of using the DRAMMIMO package.
 
-% Load the data.
-% Fictitious data are generated here for a linear model y = a*x+b.
-% Two data sets are available.
-n = 101;
-p = 2;
-N = 2;
-inputData1 = linspace(0,1,n)';
-inputData2 = linspace(0,1,n)';
-outputData1 = 0.8*inputData1+0.05*randn(n,1);
-outputData2 = 1.2*inputData2+0.15*randn(n,1);
+%% Load the data.
 
-% Set up DRAMMIMO.
-% Scenarios with one or two data sets are differentiated by mode.
-% mode = 1: using one data set (Bayesian method).
-% mode = 2: using two data sets (Maximum Entropy method) 
-mode = 2;
-if mode == 1
-    data.xdata = {inputData1};
-    data.ydata = {outputData1};
-    model.fun = {@getModelResponse};
-    model.errFun = {@getModelResponseError};
-    modelParams.names = {'a','b'};
-    modelParams.values = {1,0};
-    modelParams.lowerLimits = {-inf,-inf};
-    modelParams.upperLimits = {inf,inf};
-    modelParams.extra = {{0}};
-elseif mode == 2
-    data.xdata = {inputData1,inputData2};
-    data.ydata = {outputData1,outputData2};
-    model.fun = {@getModelResponse,@getModelResponse};
-    model.errFun = {@getModelResponseError,@getModelResponseError};
-    modelParams.names = {'a','b'};
-    modelParams.values = {1,0};
-    modelParams.lowerLimits = {-inf,-inf};
-    modelParams.upperLimits = {inf,inf};
-    modelParams.extra = {{0},{0}};
-end
+sprintf('Loading data...');
+% Ficticious data are generated here for a linear model y = a * x + b.
+% Two data sets with Gaussian noise are available.
+inputData1 = linspace(0, 1, 101)';
+inputData2 = linspace(0, 1, 101)';
+outputData1 = 0.8 * inputData1 .* (1 + 0.05 * randn(101, 1));
+outputData2 = 1.2 * inputData2 .* (1 + 0.10 * randn(101, 1));
 
-% Get estimation chains.
-% The estimation chains can be obtained in multiple consecutive runs.
-% 1st round.
-numDone = 1;
-numTotal = 5000;
-DRAMParams.numDRAMIterationsDone = numDone;
-DRAMParams.numDRAMIterations = numTotal;
+%% Set up the DRAMMIMO.
+
+sprintf('Setting DRAMMIMO...');
+% This example has two data sets.
+% Set the data struct.
+data.xdata = {inputData1, inputData2};
+data.ydata = {outputData1, outputData2};
+% Set the model struct.
+model.fun = {@getModelResponse, @getModelResponse};
+model.errFun = {@getModelResponseError, @getModelResponseError};
+% Set the modelParams struct.
+modelParams.names = {'a', 'b'};
+modelParams.values = {1, 0};
+modelParams.lowerLimits = {-inf, -inf};
+modelParams.upperLimits = {inf, inf};
+modelParams.extra = {{0}, {0}};
+% Set the DRAMParams struct.
+% Number of iterations already done.
+DRAMParams.numIterationsDone = 1;
+% Number of iterations when done.
+DRAMParams.numIterationsExpected = 5000;
+% Every X number of iterations, display current estimation.
+DRAMParams.numIterationsDisplay = 200;
+% Every X number of iterations, save the estimation chains. 
+DRAMParams.numIterationsSave = 1000;
+% For initial run, the previousResults struct is empty.
+DRAMParams.previousResults.prior.psi_s = [];
+DRAMParams.previousResults.prior.nu_s = [];
 DRAMParams.previousResults.chain_q = [];
 DRAMParams.previousResults.last_cov_q = [];
 DRAMParams.previousResults.chain_cov_err = [];
-[chain_q,last_cov_q,chain_cov_err] = getDRAMMIMOChains(data,model,modelParams,DRAMParams);
-% 2nd round.
-numDone = numTotal;
-numTotal = 10000;
-DRAMParams.numDRAMIterationsDone = numDone;
-DRAMParams.numDRAMIterations = numTotal;
+
+%% Run the DRAMMIMO.
+
+% The uncertainty quantification results consist of three parts:
+% 1. Estimation chains.
+% 2. Posterior densities.
+% 3. Credible and prediction intervals.
+
+% Get the estimation chains.
+% The estimation chains can be obtained in multiple runs.
+% 1st run.
+[prior, chain_q, last_cov_q, chain_cov_err] = ...
+    getDRAMMIMOChains(data, model, modelParams, DRAMParams);
+% 2nd run.
+% Need to set the DRAMParams struct for continuous runs.
+DRAMParams.numIterationsDone = 5000;
+DRAMParams.numIterationsExpected = 10000;
+DRAMParams.numIterationsDisplay = 200;
+DRAMParams.numIterationsSave = 1000;
+DRAMParams.previousResults.prior.psi_s = prior.psi_s;
+DRAMParams.previousResults.prior.nu_s = prior.nu_s;
 DRAMParams.previousResults.chain_q = chain_q;
 DRAMParams.previousResults.last_cov_q = last_cov_q;
 DRAMParams.previousResults.chain_cov_err = chain_cov_err;
-[chain_q,last_cov_q,chain_cov_err] = getDRAMMIMOChains(data,model,modelParams,DRAMParams);
+[prior, chain_q, last_cov_q, chain_cov_err] = ...
+    getDRAMMIMOChains(data, model, modelParams, DRAMParams);
 
-% Get posterior densities.
+% Get the posterior densities.
+% Assuming the second half of the chains are in steady-state.
 num = round(size(chain_q,1)/2)+1;
-[vals,probs] = getDRAMMIMODensities(chain_q(num:end,:));
+[vals,probs] = getDRAMMIMODensities(chain_q(num:end, :));
 
-% Get credible and prediction intervals.
+% Get the credible and prediction intervals.
+% 500 is the rule of thumb number.
 nSample = 500;
-[credLims,predLims] = getDRAMMIMOIntervals(data,model,modelParams,chain_q(num:end,:),chain_cov_err(:,:,num:end),nSample);
+[credLims,predLims] = ...
+    getDRAMMIMOIntervals(data, model, modelParams, ...
+                         chain_q(num:end,:),chain_cov_err(:,:,num:end),...
+                         nSample);
 
-%% Plot the results.
+%% Display the results.
 
+% Mean parameter estimation.
+disp('Mean Parameter Estimation = ');
+disp(mean(chain_q(num:end,:)));
+
+% Plot the results.
 figNum = 0;
 
-% Data.
+% Raw data.
 figNum = figNum+1;
 fh = figure(figNum);
 set(fh,'outerposition',96*[2,2,7,6]);
@@ -96,14 +114,16 @@ subplot(2,1,1);
 hold on;
 plot(1:1:size(chain_q,1),chain_q(:,1),'b.');
 hold off;
-set(gca,'fontsize',24,'xtick',[],'xlim',[0,numTotal],'ylim',[min(chain_q(:,1)),max(chain_q(:,1))]);
+set(gca,'fontsize',24,'xtick',[],...
+    'xlim',[0,DRAMParams.numIterationsExpected],'ylim',[min(chain_q(:,1)),max(chain_q(:,1))]);
 box on;
 ylabel('a');
 subplot(2,1,2);
 hold on;
 plot(1:1:size(chain_q,1),chain_q(:,2),'b.');
 hold off;
-set(gca,'fontsize',24,'xtick',[],'xlim',[0,numTotal],'ylim',[min(chain_q(:,2)),max(chain_q(:,2))]);
+set(gca,'fontsize',24,'xtick',[],...
+    'xlim',[0,DRAMParams.numIterationsExpected],'ylim',[min(chain_q(:,2)),max(chain_q(:,2))]);
 box on;
 ylabel('b');
 xlabel('Iterations');
@@ -128,7 +148,7 @@ set(gca,'fontsize',24,'xlim',[min(vals(:,2)),max(vals(:,2))],'ytick',[]);
 box on;
 xlabel('b');
 
-% Credible and prediction intervals for data set I.
+% Credible and prediction interval for Data I.
 figNum = figNum+1;
 fh = figure(figNum);
 set(fh,'outerposition',96*[2,2,7,6]);
@@ -150,26 +170,24 @@ legend boxoff;
 xlabel('x');
 ylabel('y_1');
 
-% Credible and prediction intervals for data set II.
-if mode == 2
-    figNum = figNum+1;
-    fh = figure(figNum);
-    set(fh,'outerposition',96*[2,2,7,6]);
-    set(gca,'fontsize',24,'xlim',[0,1],'ylim',[-0.7,2]);
-    hold on;
-    h(1) = patch([data.xdata{2}',fliplr(data.xdata{2}')],...
-          [predLims(1,:,2),fliplr(predLims(3,:,2))],...
-          [1,0.75,0.5],'linestyle','none');
-    h(2) = patch([data.xdata{2}',fliplr(data.xdata{2}')],...
-          [credLims(1,:,2),fliplr(credLims(3,:,2))],...
-          [0.75,1,0.5],'linestyle','none');
-    h(3) = plot(inputData1,credLims(2,:,2),'k');
-    h(4) = plot(inputData2,outputData2,'ro');
-    hold off;
-    box on;
-    lh = legend(h,'95% Pred Interval','95% Cred Interval','Model','Data II','location','nw');
-    lh.FontSize =18;
-    legend boxoff;
-    xlabel('x');
-    ylabel('y_2');
-end
+% Credible and prediction interval for Data II.
+figNum = figNum+1;
+fh = figure(figNum);
+set(fh,'outerposition',96*[2,2,7,6]);
+set(gca,'fontsize',24,'xlim',[0,1],'ylim',[-0.7,2]);
+hold on;
+h(1) = patch([data.xdata{2}',fliplr(data.xdata{2}')],...
+      [predLims(1,:,2),fliplr(predLims(3,:,2))],...
+      [1,0.75,0.5],'linestyle','none');
+h(2) = patch([data.xdata{2}',fliplr(data.xdata{2}')],...
+      [credLims(1,:,2),fliplr(credLims(3,:,2))],...
+      [0.75,1,0.5],'linestyle','none');
+h(3) = plot(inputData1,credLims(2,:,2),'k');
+h(4) = plot(inputData2,outputData2,'ro');
+hold off;
+box on;
+lh = legend(h,'95% Pred Interval','95% Cred Interval','Model','Data II','location','nw');
+lh.FontSize =18;
+legend boxoff;
+xlabel('x');
+ylabel('y_2');
