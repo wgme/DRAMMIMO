@@ -37,7 +37,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [credLims,predLims] = getDRAMMIMOIntervals(data,model,modelParams,chain_q,chain_cov_err,nSample)
+    disp('--------------------------------------------------');
+    disp('Initializing credible and prediction intervals...');
+    
     % Initialize parameters. Using 95% intervals.
+    
     lims = [0.025, 0.5, 0.975];
     m = size(chain_q,1);
     N = length(data.xdata);
@@ -54,6 +58,8 @@ function [credLims,predLims] = getDRAMMIMOIntervals(data,model,modelParams,chain
     else
         isample = ceil(rand(nSample,1)*m);
     end
+    
+    disp('Generating credible and prediction intervals...');
     
     % Sample the estimation chain for the credible region as ysave and the prediction region as osave.
     ysave = zeros(nSample,n,N);
@@ -80,4 +86,7 @@ function [credLims,predLims] = getDRAMMIMOIntervals(data,model,modelParams,chain
     intervals.credLims = credLims;
     intervals.predLims = predLims;
     save('intervals.mat','intervals');
+    
+    disp('Credible and prediction intervals generated.');
+    disp('--------------------------------------------------');
 end

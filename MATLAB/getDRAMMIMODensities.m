@@ -22,6 +22,9 @@
 
 function [qVals,qProbs] = getDRAMMIMODensities(qChain)
 
+    disp('--------------------------------------------------');
+    disp('Initializing posterior densities...');
+    
     % Initialization
     numIterations = size(qChain,1);
     numChains = size(qChain,2);
@@ -31,6 +34,8 @@ function [qVals,qProbs] = getDRAMMIMODensities(qChain)
     qRange = qMax-qMin;
     qVals = zeros(numNodes,numChains);
     qProbs = zeros(size(qVals));
+    
+    disp('Generating posterior densities...');
     
     % Kernel density estimation (Gaussian).
     for i = 1:1:numChains
@@ -61,4 +66,7 @@ function [qVals,qProbs] = getDRAMMIMODensities(qChain)
     densities.qVals = qVals;
     densities.qProbs = qProbs;
     save('densities.mat','densities');
+    
+    disp('Posterior densities generated.');
+    disp('--------------------------------------------------');
 end
