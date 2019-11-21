@@ -1,11 +1,39 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % By: Wei Gao (wg14@my.fsu.edu)
-% Last Modified: 07/24/2019
+% Last Modified: 11/20/2019
 % Desciption:
 % 1. Based on the code from Dr. Marko Laine 
 %    (http://helios.fmi.fi/~lainema/mcmc/).
 % 2. Also based on the math from Dr. Ralph C. Smith 
 %    (Uncertainty Quantification: Theory, Implementation, and Applications).
+% V01: Null.
+% V02a: Null.
+% V02b: The code was used for dissertation, named propErrDRAMMIMO(). 
+%       The code was a modified version of the mcmcpred() function in 
+%       Dr. Marko Laine's MCMC toolbox for MATLAB.
+% V03: The name was changed from propErrDRAMMIMO() to getDRAMMIMOIntervals().
+% V04: The code for saving results was added.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% data: cell array, size = 1 * N. 
+%       Each cell is a vector, size = n * 1.
+%       N = number of data sets (N=1 for Bayesian, N>1 for Max Entropy).
+%       n = number of observation points.
+% model: struct.
+%        .fun, cell array, size = 1 * N. Each cell is a function handle.
+%        .errFun, cell array, size = 1 * N. Each cell is a function handle.
+% modelParams: struct.
+%              .names, cell array, size = 1 * p. Each cell is a string.
+%              .values, cell array, size = 1 * p. Each cell is a scalar.
+%              .lowerLimits, cell array, size = 1 * p. Each cell is a scalar.
+%              .upperLimits, cell array, size = 1 * p. Each cell is a scalar.
+%              .extra, cell array, size = 1 * p. Each cell is a cell array.
+%              p = number of parameters to be estimated.
+% chain_q: matrix, m * p.
+%          m = number of iterations selected.
+% chain_cov_err: matrix, m * N * N.
+% nSample: scalar, rule of thumb value is 500.
+% credLims: matrix, 3 * p * N.
+% predLims: matrix, 3 * p * N.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [credLims,predLims] = getDRAMMIMOIntervals(data,model,modelParams,chain_q,chain_cov_err,nSample)
@@ -47,4 +75,9 @@ function [credLims,predLims] = getDRAMMIMOIntervals(data,model,modelParams,chain
         credLims(:,:,i) = interp1(sort(ysave(:,:,i)),(size(ysave(:,:,i),1)-1)*lims+1);
         predLims(:,:,i) = interp1(sort(osave(:,:,i)),(size(osave(:,:,i),1)-1)*lims+1);
     end
+    
+    % Save the results.
+    intervals.credLims = credLims;
+    intervals.predLims = predLims;
+    save('intervals.mat','intervals');
 end

@@ -1,13 +1,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % By: Wei Gao (wg14@my.fsu.edu)
-% Last Modified: 07/24/2019
+% Last Modified: 11/20/2019
 % Desciption:
 % 1. Based on the code from Dr. Marko Laine 
 %    (http://helios.fmi.fi/~lainema/mcmc/).
 % 2. Also based on the math from Dr. Ralph C. Smith 
 %    (Uncertainty Quantification: Theory, Implementation, and Applications).
+% V01: Null.
+% V02a: Null.
+% V02b: Null.
+% V03: The code was a simplified version of the density() function in 
+%      Dr. Marko Laine's MCMC toolbox for MATLAB. Refer to it for details.
+% V04: The code for saving results was added.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% qChain: matrix, Ms * p.
+%         Ms = number of iterations selected.
+%         p = number of parameters estimated.
+% qVals: matrix, 100 * p. Parameter values that have posterior densities.
+% qProbs: matrix, 100 * p. Corresponding posterior densities.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [qVals,qProbs] = getDRAMMIMODensities(qChain)
+
+    % Initialization
     numIterations = size(qChain,1);
     numChains = size(qChain,2);
     numNodes = 100;
@@ -17,6 +32,7 @@ function [qVals,qProbs] = getDRAMMIMODensities(qChain)
     qVals = zeros(numNodes,numChains);
     qProbs = zeros(size(qVals));
     
+    % Kernel density estimation (Gaussian).
     for i = 1:1:numChains
         qVals(:,i) = linspace(qMin(i)-0.08*qRange(i),qMax(i)+0.08*qRange(i),numNodes)';
         
@@ -40,4 +56,9 @@ function [qVals,qProbs] = getDRAMMIMODensities(qChain)
             qProbs(j,i) = 1/numIterations*sum(exp(-0.5*err.^2)/sqrt(2*pi))./s;
         end
     end
+    
+    % Save the results.
+    densities.qVals = qVals;
+    densities.qProbs = qProbs;
+    save('densities.mat','densities');
 end
