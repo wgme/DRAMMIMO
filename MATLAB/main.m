@@ -1,11 +1,16 @@
 close all; clear; clc; format short g;
 %% Below is an example of using the DRAMMIMO package.
+% Two simple linear models y1 = a * x1 + b and y2 = a * x2 + b are considered.
+% These two models share parameters a and b, such that the Maximum Entropy
+% method can be taken advantage of.
+% Two sets of ficticious data are generated using the models with Gaussian 
+% noise, i.e. y1 = a1 * x1 + b + epsilon1 and y2 = a2 * x2 + b + epsilon2.
+% A discrepancy is introduced between a1 and a2, with different magnitudes 
+% of noise, epsilon1 and epsilon2.
 
 %% Load the data.
 
 sprintf('Loading data...');
-% Ficticious data are generated here for a linear model y = a * x + b.
-% Two data sets with Gaussian noise are available.
 inputData1 = linspace(0, 1, 101)';
 inputData2 = linspace(0, 1, 101)';
 outputData1 = 0.8 * inputData1 .* (1 + 0.05 * randn(101, 1));
