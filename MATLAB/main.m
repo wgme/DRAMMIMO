@@ -10,15 +10,19 @@ close all; clear; clc; format short g;
 
 %% Load the data.
 
-sprintf('Loading data...');
+disp('Loading data...');
+
 inputData1 = linspace(0, 1, 101)';
 inputData2 = linspace(0, 1, 101)';
-outputData1 = 0.8 * inputData1 .* (1 + 0.05 * randn(101, 1));
-outputData2 = 1.2 * inputData2 .* (1 + 0.10 * randn(101, 1));
+% outputData1 = 0.8 * inputData1 .* (1 + 0.05 * randn(101, 1));
+% outputData2 = 1.2 * inputData2 .* (1 + 0.10 * randn(101, 1));
+outputData1 = 0.8 * inputData1 + 0.05 * randn(101, 1);
+outputData2 = 1.2 * inputData2 + 0.10 * randn(101, 1);
 
 %% Set up the DRAMMIMO.
 
-sprintf('Setting DRAMMIMO...');
+disp('Setting DRAMMIMO...');
+
 % This example has two data sets.
 % Set the data struct.
 data.xdata = {inputData1, inputData2};
@@ -55,6 +59,8 @@ DRAMParams.previousResults.chain_cov_err = [];
 % 2. Posterior densities.
 % 3. Credible and prediction intervals.
 
+disp('Running DRAMMIMO...');
+
 % Get the estimation chains.
 % The estimation chains can be obtained in multiple runs.
 % 1st run.
@@ -88,6 +94,8 @@ nSample = 500;
                          nSample);
 
 %% Display the results.
+
+disp('Presenting results...');
 
 % Mean parameter estimation.
 disp('Mean Parameter Estimation = ');
