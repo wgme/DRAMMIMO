@@ -59,6 +59,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [prior,chain_q,last_cov_q,chain_cov_err] = getDRAMMIMOChains(data,model,modelParams,DRAMParams)
+    disp('--------------------------------------------------');
+    disp('Initializing estimation chains...');
+    
     %% Initialize the parameters.
     
     % Number of data sets.
@@ -173,6 +176,9 @@ function [prior,chain_q,last_cov_q,chain_cov_err] = getDRAMMIMOChains(data,model
     else
         chain_cov_err(:,:,1:Mo) = DRAMParams.previousResults.chain_cov_err;
     end
+    
+    disp('Generating estimation chains...');
+    disp('--------------------------------------------------');
     
     %% Generate the chains.
     
@@ -365,4 +371,7 @@ function [prior,chain_q,last_cov_q,chain_cov_err] = getDRAMMIMOChains(data,model
     chains.last_cov_q = last_cov_q;
     chains.chain_cov_err = chain_cov_err;
     save('chains.mat','chains');
+    
+    disp('Estimation chains generated.');
+    disp('--------------------------------------------------');
 end
