@@ -7,7 +7,7 @@ The original DRAM algorithm is based on the MATLAB toolbox from Dr. Marko J. Lai
 
 The Maximum Entropy method can be used for fusing data from hetergeneous sources and quantifying uncertainty of model parameters that are shared among models [2]. When only one set of data is available, the Maximum Entropy method automatically becomes the Bayesian method, and the algorithm is equivalent to the original DRAM algorithm.
 
-The package provides code for both MATLAB and Python environment at this point. C/C++ version will come in the future. Inside each version, there is currently a simple linear model to demonstrate how to use the package. More complicated examples will be added in the future.
+The package provides code for both MATLAB and Python environment at this point. C/C++ version will come in the future. Inside each version, there is currently only one simple linear model to demonstrate how to use the package. More complicated examples will be added in the future.
 
 [1] Ralph C Smith. Uncertainty quantification: theory, implementation, and applications, volume 12. Siam, 2013.
 
